@@ -1,5 +1,7 @@
 # Title:wdd AdRules List 
 # Update: 2025-01-16
+
+# 新增自定义屏蔽域名
 DOMAIN,ad.12306.cn
 DOMAIN-SUFFIX,25mao.com
 DOMAIN-SUFFIX,ajay.app
@@ -7,3 +9,58 @@ DOMAIN-SUFFIX,adsrvr.cn
 DOMAIN-SUFFIX,kajicam.com
 DOMAIN-SUFFIX,app-analytics-services.com
 DOMAIN,roaming.officeapps.live.com
+
+
+
+
+
+# 新增常见广告平台
+DOMAIN-SUFFIX,doubleclick.net
+DOMAIN-SUFFIX,googleadservices.com
+DOMAIN-SUFFIX,googlesyndication.com
+
+
+# 新增常见统计和追踪服务
+DOMAIN-SUFFIX,umeng.com
+DOMAIN-SUFFIX,umengcloud.com
+DOMAIN-SUFFIX,cnzz.com
+DOMAIN-SUFFIX,mmstat.com
+DOMAIN-SUFFIX,mixpanel.com
+DOMAIN-SUFFIX,adjust.com
+DOMAIN-SUFFIX,appsflyer.com
+DOMAIN-SUFFIX,kochava.com
+DOMAIN-SUFFIX,branch.io
+
+# 新增google广告域名
+DOMAIN-SUFFIX,ads.google.cn
+DOMAIN-SUFFIX,ads.google.com
+DOMAIN-SUFFIX,afd.baidu.cn
+DOMAIN-SUFFIX,afd.baidu.com
+DOMAIN-SUFFIX,afd.l.google.com
+DOMAIN-SUFFIX,analytics-alv.google.com
+DOMAIN-SUFFIX,analytics.google.com
+DOMAIN-SUFFIX,androidtvchannels-pa.googleapis.com
+DOMAIN-SUFFIX,androidtvwatsonfe-pa.googleapis.com
+DOMAIN-SUFFIX,clickserver.googleads.com
+DOMAIN-SUFFIX,doubleclickbygoogle.com
+DOMAIN-SUFFIX,fcmatch.google.com
+DOMAIN-SUFFIX,fcmatch.youtube.com
+DOMAIN-SUFFIX,firebasedynamiclinks.googleapis.com
+DOMAIN-SUFFIX,firebaselogging-pa.googleapis.com
+DOMAIN-SUFFIX,firebaselogging.googleapis.com
+DOMAIN-SUFFIX,fundingchoicesmessages.google.com
+DOMAIN-SUFFIX,mail-ads.google.com
+DOMAIN-SUFFIX,optimize.google.com
+
+# 新增视频平台广告域名
+DOMAIN-SUFFIX,ads.youtube.com
+
+
+# 新增中国大陆常见广告域名
+DOMAIN-SUFFIX,e.qq.com
+DOMAIN-SUFFIX,gdt.qq.com
+DOMAIN-SUFFIX,ad.sina.com.cn
+DOMAIN-SUFFIX,adm.baidu.com
+DOMAIN-SUFFIX,cpro.baidu.com
+DOMAIN-SUFFIX,pos.baidu.com
+DOMAIN-SUFFIX,union.baidu.com
