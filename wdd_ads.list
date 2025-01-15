@@ -1,7 +1,9 @@
-DOMAIN-SUFFIX,ad.12306.cn
+# Title:wdd AdRules List 
+# Update: 2025-01-16
+DOMAIN,ad.12306.cn
 DOMAIN-SUFFIX,25mao.com
 DOMAIN-SUFFIX,ajay.app
 DOMAIN-SUFFIX,adsrvr.cn
 DOMAIN-SUFFIX,kajicam.com
 DOMAIN-SUFFIX,app-analytics-services.com
-DOMAIN-SUFFIX,roaming.officeapps.live.com
+DOMAIN,roaming.officeapps.live.com
