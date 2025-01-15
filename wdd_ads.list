@@ -32,35 +32,35 @@ DOMAIN-SUFFIX,kochava.com
 DOMAIN-SUFFIX,branch.io
 
 # 新增google广告域名
-DOMAIN-SUFFIX,ads.google.cn
-DOMAIN-SUFFIX,ads.google.com
-DOMAIN-SUFFIX,afd.baidu.cn
-DOMAIN-SUFFIX,afd.baidu.com
-DOMAIN-SUFFIX,afd.l.google.com
-DOMAIN-SUFFIX,analytics-alv.google.com
-DOMAIN-SUFFIX,analytics.google.com
-DOMAIN-SUFFIX,androidtvchannels-pa.googleapis.com
-DOMAIN-SUFFIX,androidtvwatsonfe-pa.googleapis.com
-DOMAIN-SUFFIX,clickserver.googleads.com
-DOMAIN-SUFFIX,doubleclickbygoogle.com
-DOMAIN-SUFFIX,fcmatch.google.com
-DOMAIN-SUFFIX,fcmatch.youtube.com
-DOMAIN-SUFFIX,firebasedynamiclinks.googleapis.com
-DOMAIN-SUFFIX,firebaselogging-pa.googleapis.com
-DOMAIN-SUFFIX,firebaselogging.googleapis.com
-DOMAIN-SUFFIX,fundingchoicesmessages.google.com
-DOMAIN-SUFFIX,mail-ads.google.com
-DOMAIN-SUFFIX,optimize.google.com
+DOMAIN,ads.google.cn
+DOMAIN,ads.google.com
+DOMAIN,afd.baidu.cn
+DOMAIN,afd.baidu.com
+DOMAIN,afd.l.google.com
+DOMAIN,analytics-alv.google.com
+DOMAIN,analytics.google.com
+DOMAIN,androidtvchannels-pa.googleapis.com
+DOMAIN,androidtvwatsonfe-pa.googleapis.com
+DOMAIN,clickserver.googleads.com
+DOMAIN,doubleclickbygoogle.com
+DOMAIN,fcmatch.google.com
+DOMAIN,fcmatch.youtube.com
+DOMAIN,firebasedynamiclinks.googleapis.com
+DOMAIN,firebaselogging-pa.googleapis.com
+DOMAIN,firebaselogging.googleapis.com
+DOMAIN,fundingchoicesmessages.google.com
+DOMAIN,mail-ads.google.com
+DOMAIN,optimize.google.com
 
 # 新增视频平台广告域名
-DOMAIN-SUFFIX,ads.youtube.com
+DOMAIN,ads.youtube.com
 
 
 # 新增中国大陆常见广告域名
-DOMAIN-SUFFIX,e.qq.com
-DOMAIN-SUFFIX,gdt.qq.com
-DOMAIN-SUFFIX,ad.sina.com.cn
-DOMAIN-SUFFIX,adm.baidu.com
-DOMAIN-SUFFIX,cpro.baidu.com
-DOMAIN-SUFFIX,pos.baidu.com
-DOMAIN-SUFFIX,union.baidu.com
+DOMAIN,e.qq.com
+DOMAIN,gdt.qq.com
+DOMAIN,ad.sina.com.cn
+DOMAIN,adm.baidu.com
+DOMAIN,cpro.baidu.com
+DOMAIN,pos.baidu.com
+DOMAIN,union.baidu.com
