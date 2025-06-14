@@ -1,5 +1,14 @@
 # Title:wdd AdRules List 
-# Update: 2025-01-16
+# Update: 2025-06-16
+
+
+# 新增网络控制联网时间，工作时间开启
+DOMAIN-SUFFIX,douyin.com
+DOMAIN-SUFFIX,hupu.com
+DOMAIN-SUFFIX,youtube.com
+
+
+
 
 # 新增自定义屏蔽域名
 DOMAIN,ad.12306.cn
