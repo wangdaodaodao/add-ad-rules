@@ -2,10 +2,12 @@
 # Update: 2025-06-16
 
 
-# 新增网络控制联网时间，工作时间开启
+# 新增网络控制联网时间，只在工作时间开启
 DOMAIN-SUFFIX,douyin.com
 DOMAIN-SUFFIX,hupu.com
 DOMAIN-SUFFIX,youtube.com
+DOMAIN-SUFFIX,bilibili.com
+
 
 
 
