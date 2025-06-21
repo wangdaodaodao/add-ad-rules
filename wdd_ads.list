@@ -2,78 +2,20 @@
 # Update: 2025-06-16
 
 
-# 新增网络控制联网时间，只在工作时间开启
 
 
 
 
 
 # 新增自定义屏蔽域名
-DOMAIN,ad.12306.cn
 DOMAIN-SUFFIX,25mao.com
 DOMAIN-SUFFIX,ajay.app
-DOMAIN-SUFFIX,adsrvr.cn
 DOMAIN-SUFFIX,kajicam.com
-DOMAIN-SUFFIX,app-analytics-services.com
 DOMAIN,roaming.officeapps.live.com
-DOMAIN,cr.adsappier.com
-DOMAIN-SUFFIX,download.todesktop.com
-DOMAIN-SUFFIX,app-measurement.com
-DOMAIN,ad.qq.com
 
 
 
 
 
-# 新增常见广告平台
-DOMAIN-SUFFIX,doubleclick.net
-DOMAIN-SUFFIX,googleadservices.com
-DOMAIN-SUFFIX,googlesyndication.com
-
-
-# 新增常见统计和追踪服务
-DOMAIN-SUFFIX,umeng.com
-DOMAIN-SUFFIX,umengcloud.com
-DOMAIN-SUFFIX,cnzz.com
-DOMAIN-SUFFIX,mmstat.com
-DOMAIN-SUFFIX,mixpanel.com
-DOMAIN-SUFFIX,adjust.com
-DOMAIN-SUFFIX,appsflyer.com
-DOMAIN-SUFFIX,kochava.com
-DOMAIN-SUFFIX,branch.io
-
-# 新增google广告域名
-DOMAIN,ads.google.cn
-DOMAIN,ads.google.com
-DOMAIN,afd.baidu.cn
-DOMAIN,afd.baidu.com
-DOMAIN,afd.l.google.com
-DOMAIN,analytics-alv.google.com
-DOMAIN,analytics.google.com
-DOMAIN,androidtvchannels-pa.googleapis.com
-DOMAIN,androidtvwatsonfe-pa.googleapis.com
-DOMAIN,clickserver.googleads.com
-DOMAIN,doubleclickbygoogle.com
-DOMAIN,fcmatch.google.com
-DOMAIN,fcmatch.youtube.com
-DOMAIN,firebasedynamiclinks.googleapis.com
-DOMAIN,firebaselogging-pa.googleapis.com
-DOMAIN,firebaselogging.googleapis.com
-DOMAIN,fundingchoicesmessages.google.com
-DOMAIN,mail-ads.google.com
-DOMAIN,optimize.google.com
-
-# 新增视频平台广告域名
-DOMAIN,ads.youtube.com
-
-
-# 新增中国大陆常见广告域名
-DOMAIN,e.qq.com
-DOMAIN,gdt.qq.com
-DOMAIN,ad.sina.com.cn
-DOMAIN,adm.baidu.com
-DOMAIN,cpro.baidu.com
-DOMAIN,pos.baidu.com
-DOMAIN,union.baidu.com
 
 
