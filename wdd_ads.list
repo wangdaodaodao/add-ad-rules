@@ -8,10 +8,9 @@
 
 
 # 新增自定义屏蔽域名
-DOMAIN-SUFFIX,25mao.com
-DOMAIN-SUFFIX,ajay.app
-DOMAIN-SUFFIX,kajicam.com
-DOMAIN,roaming.officeapps.live.com
+DOMAIN-SUFFIX,douyin.com
+DOMAIN-SUFFIX,hupu.com
+DOMAIN-SUFFIX,bilibili.com
 
 
 
