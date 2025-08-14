@@ -7,13 +7,12 @@
 
 
 
-# 新增自定义屏蔽域名
-DOMAIN-SUFFIX,douyin.com
-DOMAIN-SUFFIX,hupu.com
-
-
-
-
+# 新增office运行时，远程访问
+DOMAIN-SUFFIX,azurewebsites.net
+DOMAIN,mobile.events.data.microsoft.com
+DOMAIN-SUFFIX,officeapps.live.com
+DOMAIN-SUFFIX,resources.office.net
+DOMAIN,officeclient.microsoft.com
 
 
 
