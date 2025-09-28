@@ -5,10 +5,6 @@ import { connect } from 'cloudflare:sockets';
 const authToken = '332d09ca-3893-48eb-96d5-2d58ae567e42';
 const fallbackAddress = 'ProxyIP.cmliussss.net';
 const fallbackPort = '443';
-const socks5Config = '';
-
-const parsedSocks5Config = {};
-const isSocksEnabled = false;
 
 const E_INVALID_DATA = atob('aW52YWxpZCBkYXRh');
 const E_INVALID_USER = atob('aW52YWxpZCB1c2Vy');
@@ -18,11 +14,6 @@ const E_INVALID_ADDR_TYPE = atob('aW52YWxpZCBhZGRyZXNzVHlwZQ==');
 const E_EMPTY_ADDR = atob('YWRkcmVzc1ZhbHVlIGlzIGVtcHR5');
 const E_WS_NOT_OPEN = atob('d2ViU29ja2V0LmVhZHlTdGF0ZSBpcyBub3Qgb3Blbg==');
 const E_INVALID_ID_STR = atob('U3RyaW5naWZpZWQgaWRlbnRpZmllciBpcyBpbnZhbGlk');
-const E_INVALID_SOCKS_ADDR = atob('SW52YWxpZCBTT0NLUyBhZGRyZXNzIGZvcm1hdA==');
-const E_SOCKS_NO_METHOD = atob('bm8gYWNjZXB0YWJsZSBtZXRob2Rz');
-const E_SOCKS_AUTH_NEEDED = atob('c29ja3Mgc2VydmVyIG5lZWRzIGF1dGg=');
-const E_SOCKS_AUTH_FAIL = atob('ZmFpbCB0byBhdXRoIHNvY2tzIHNlcnZlcg==');
-const E_SOCKS_CONN_FAIL = atob('ZmFpbCB0byBvcGVuIHNvY2tzIGNvbm5lY3Rpb24=');
 
 const ADDRESS_TYPE_IPV4 = 1;
 const ADDRESS_TYPE_URL = 2;
@@ -220,18 +211,14 @@ async function handleWsRequest(request) {
 
 async function forwardTCP(addrType, host, portNum, rawData, ws, respHeader, remoteConnWrapper) {
     async function connectAndSend(address, port) {
-        const remoteSock = isSocksEnabled ?
-            await establishSocksConnection(addrType, address, port) :
-            connect({ hostname: address, port: port });
+        const remoteSock = connect({ hostname: address, port: port });
         const writer = remoteSock.writable.getWriter();
         await writer.write(rawData);
         writer.releaseLock();
         return remoteSock;
     }
     async function retryConnection() {
-        const newSocket = isSocksEnabled ?
-            await connectAndSend(host, portNum) :
-            await connectAndSend(fallbackAddress || host, parseInt(fallbackPort, 10) || portNum);
+        const newSocket = await connectAndSend(fallbackAddress || host, parseInt(fallbackPort, 10) || portNum);
         remoteConnWrapper.socket = newSocket;
         newSocket.closed.catch(() => {}).finally(() => closeSocketQuietly(ws));
         connectStreams(newSocket, ws, respHeader, null);
@@ -316,43 +303,7 @@ async function forwardUDP(udpChunk, webSocket, respHeader) {
 	} catch (error) { console.error(`DNS forward error: ${error.message}`); }
 }
 
-async function establishSocksConnection(addrType, address, port) {
-	const { username, password, hostname, socksPort } = parsedSocks5Config;
-	const socket = connect({ hostname, port: socksPort });
-	const writer = socket.writable.getWriter();
-	await writer.write(new Uint8Array(username ? [5, 2, 0, 2] : [5, 1, 0]));
-	const reader = socket.readable.getReader();
-	let res = (await reader.read()).value;
-	if (res[0] !== 5 || res[1] === 255) throw new Error(E_SOCKS_NO_METHOD);
-	if (res[1] === 2) {
-		if (!username || !password) throw new Error(E_SOCKS_AUTH_NEEDED);
-		const encoder = new TextEncoder();
-		const authRequest = new Uint8Array([1, username.length, ...encoder.encode(username), password.length, ...encoder.encode(password)]);
-		await writer.write(authRequest);
-		res = (await reader.read()).value;
-		if (res[0] !== 1 || res[1] !== 0) throw new Error(E_SOCKS_AUTH_FAIL);
-	}
-	const encoder = new TextEncoder(); let DSTADDR;
-	switch (addrType) {
-		case ADDRESS_TYPE_IPV4: DSTADDR = new Uint8Array([1, ...address.split('.').map(Number)]); break;
-		case ADDRESS_TYPE_URL: DSTADDR = new Uint8Array([3, address.length, ...encoder.encode(address)]); break;
-		case ADDRESS_TYPE_IPV6: DSTADDR = new Uint8Array([4, ...address.split(':').flatMap(x => [parseInt(x.slice(0, 2), 16), parseInt(x.slice(2), 16)])]); break;
-		default: throw new Error(E_INVALID_ADDR_TYPE);
-	}
-	await writer.write(new Uint8Array([5, 1, 0, ...DSTADDR, port >> 8, port & 255]));
-	res = (await reader.read()).value;
-	if (res[1] !== 0) throw new Error(E_SOCKS_CONN_FAIL);
-	writer.releaseLock(); reader.releaseLock();
-	return socket;
-}
 
-function parseSocksConfig(address) {
-    let [latter, former] = address.split("@").reverse(); let username, password, hostname, socksPort;
-    if (former) { const formers = former.split(":"); if (formers.length !== 2) throw new Error(E_INVALID_SOCKS_ADDR);[username, password] = formers; }
-    const latters = latter.split(":"); socksPort = Number(latters.pop()); if (isNaN(socksPort)) throw new Error(E_INVALID_SOCKS_ADDR);
-    hostname = latters.join(":"); if (hostname.includes(":") && !/^\[.*\]$/.test(hostname)) throw new Error(E_INVALID_SOCKS_ADDR);
-    return { username, password, hostname, socksPort };
-}
 
 function base64ToArray(b64Str) {
     if (!b64Str) return { error: null };
