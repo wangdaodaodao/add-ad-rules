@@ -111,7 +111,8 @@ async function handleSubscriptionRequest(request, env, uuid) {
 
                 const validNodes = nodeList.filter(node =>
                     node && node.ip && node.ip !== '127.0.0.1' && !isNaN(node.port) &&
-                    (node.isp.startsWith('HK') || node.isp.startsWith('US') || node.isp.startsWith('JP') || node.isp.startsWith('SG'))
+                    (node.isp.startsWith('HK') || node.isp.startsWith('US') || node.isp.startsWith('WDD') || node.isp.startsWith('SG')) &&
+                    !node.isp.includes('NAT')
                 );
 
                 if (validNodes.length > 0) {
