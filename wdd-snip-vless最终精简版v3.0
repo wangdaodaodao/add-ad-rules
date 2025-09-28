@@ -60,7 +60,7 @@ import { connect } from 'cloudflare:sockets';
 
 const authToken = 'f6b7a6b5-d2bc-43bb-b8dc-e181a07833eb';
 const subPath = 'good';
-const fallbackAddress = atob('UHJveHlJUC5jbWxpdXNzcy5uZXQ=');
+const fallbackAddress = 'ProxyIP.cmliusss.net';
 const fallbackPort = '443';
 
 const E_INVALID_DATA = atob('aW52YWxpZCBkYXRh');
@@ -221,6 +221,7 @@ async function forwardTCP(addrType, host, portNum, rawData, ws, respHeader, remo
         remoteConnWrapper.socket = initialSocket;
         connectStreams(initialSocket, ws, respHeader, retryConnection);
     } catch (err) {
+        console.log('Initial connection failed, trying fallback:', err);
         retryConnection();
     }
 }
