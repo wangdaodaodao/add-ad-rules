@@ -2,7 +2,6 @@
 
 import { connect } from 'cloudflare:sockets';
 
-// --- 硬编码配置 ---
 const authToken = '332d09ca-3893-48eb-96d5-2d58ae567e42';
 const fallbackAddress = 'ProxyIP.cmliussss.net';
 const fallbackPort = '443';
@@ -32,7 +31,7 @@ const ADDRESS_TYPE_IPV6 = 3;
 export default {
 	async fetch(request, env, ctx) {
 		try {
-			const subPath = authToken;
+			const subPath = 'good';
 			const url = new URL(request.url);
 
 			if (request.headers.get('Upgrade') === 'websocket') {
