@@ -1,13 +1,9 @@
-/*
- * ===========================================
- * Cloudflare snippets 代理服务项目（v1.0）
- * ===========================================
-nat64版
+
 
 import { connect } from 'cloudflare:sockets';
 
 // --- 硬编码配置 ---
-const authToken = 'c962dddb-aa53-474a-b4c0-2d66fd05c40c';
+const authToken = '332d09ca-3893-48eb-96d5-2d58ae567e42';
 const fallbackAddress = 'ProxyIP.cmliussss.net';
 const fallbackPort = '443';
 const socks5Config = '';
@@ -43,8 +39,7 @@ export default {
 				return await handleWsRequest(request);
 			} else if (request.method === 'GET') {
 				if (url.pathname === '/') {
-					const successHtml = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale-1.0"><title>部署成功</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background-color:#121212;color:#e0e0e0;text-align:center;}.container{padding:2rem;border-radius:8px;background-color:#1e1e1e;box-shadow:0 4px 6px rgba(0,0,0,0.1);}h1{color:#4caf50;}</style></head><body><div class="container"><h1>✅ 部署成功</h1><p>代理与动态订阅功能均已启用。</p></div></body></html>`;
-					return new Response(successHtml, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+					return new Response("Good job", { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 				}
 				if (url.pathname === `/${subPath}`) {
 					return await handleSubscriptionRequest(request, env, authToken);
@@ -62,7 +57,6 @@ async function handleSubscriptionRequest(request, env, uuid) {
     const finalLinks = [];
     const workerDomain = url.hostname;
 
-    // 从外部编辑服务获取节点列表，替代所有原有节点
     const externalEditUrl = (env && env.EXTERNAL_EDIT_URL) || 'http://good.misu7.filegear-sg.me/wddout/edit';
     try {
         const response = await fetch(externalEditUrl, {
@@ -79,7 +73,6 @@ async function handleSubscriptionRequest(request, env, uuid) {
             if (textareaMatch && textareaMatch[1]) {
                 const textareaContent = textareaMatch[1].trim();
 
-                // 按行分割内容，过滤空行和注释
                 const lines = textareaContent.split('\n')
                     .map(line => line.trim())
                     .filter(line => line && !line.startsWith('--'));
@@ -89,7 +82,6 @@ async function handleSubscriptionRequest(request, env, uuid) {
                 for (const line of lines) {
                     try {
                         if (line.startsWith('vless://')) {
-                            // 解析完整的vless链接，提取IP和端口
                             const urlPart = line.substring(8).split('?')[0];
                             const atIndex = urlPart.indexOf('@');
                             if (atIndex === -1) continue;
@@ -104,7 +96,6 @@ async function handleSubscriptionRequest(request, env, uuid) {
                                 isp: decodeURIComponent(remark)
                             });
                         } else if (line.includes('#')) {
-                            // 解析 IP:端口#备注 格式
                             const [ipPort, remark] = line.split('#');
                             if (ipPort.includes(':')) {
                                 const [ip, port] = ipPort.split(':');
@@ -128,7 +119,6 @@ async function handleSubscriptionRequest(request, env, uuid) {
                     }
                 }
 
-                // 过滤无效节点，并只保留HK/US/JP/SG区域的节点（替代所有原有节点）
                 const validNodes = nodeList.filter(node =>
                     node && node.ip && node.ip !== '127.0.0.1' && !isNaN(node.port) &&
                     (node.isp.startsWith('HK') || node.isp.startsWith('US') || node.isp.startsWith('JP') || node.isp.startsWith('SG'))
@@ -165,14 +155,12 @@ function generateLinksFromKVNodes(list, uuid, workerDomain) {
     const httpsPorts = [443];
     const httpPorts = [80];
     const links = [];
-    const wsPath = encodeURIComponent('/?ed=2048');
+    const wsPath = encodeURIComponent('/wdd');
     const proto = 'vless';
 
     list.forEach(item => {
         const safeIP = item.ip.includes(':') ? `[${item.ip}]` : item.ip;
 
-        // 为每个节点生成443端口TLS版本和80端口非TLS版本（参考原始源码逻辑）
-        // 推荐版本（443 TLS）加✅标记，备选版本（80 非TLS）不加
         httpsPorts.forEach(port => {
             const wsParams = new URLSearchParams({
                 encryption: 'none',
@@ -183,18 +171,7 @@ function generateLinksFromKVNodes(list, uuid, workerDomain) {
                 host: workerDomain,
                 path: wsPath
             });
-            links.push(`${proto}://${uuid}@${safeIP}:${port}?${wsParams.toString()}#${encodeURIComponent("Snip-" + item.isp + " ✅")}`);
-        });
-
-        httpPorts.forEach(port => {
-            const wsParams = new URLSearchParams({
-                encryption: 'none',
-                security: 'none',
-                type: 'ws',
-                host: workerDomain,
-                path: wsPath
-            });
-            links.push(`${proto}://${uuid}@${safeIP}:${port}?${wsParams.toString()}#${encodeURIComponent("Snip-" + item.isp)}`);
+            links.push(`${proto}://${uuid}@${safeIP}:${port}?${wsParams.toString()}#${encodeURIComponent("SNIP-" + item.isp)}`);
         });
     });
     return links;
