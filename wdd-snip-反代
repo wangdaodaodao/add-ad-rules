@@ -1,0 +1,320 @@
+import { connect } from 'cloudflare:sockets';
+
+const authToken = 'a1b2c3d4-e5f6-4877-89ab-cdef01234567';
+// const fallbackAddress = String.fromCharCode(80,114,111,120,121,73,80,46,99,109,108,105,117,115,115,115,115,46,110,101,116);
+const fallbackAddress = '8.8.8.8'; // 测试IP
+const fallbackPort = '443';
+
+const E_INVALID_DATA = atob('aW52YWxpZCBkYXRh');
+const E_INVALID_USER = atob('aW52YWxpZCB1c2Vy');
+const E_UNSUPPORTED_CMD = atob('Y29tbWFuZCBpcyBub3Qgc3VwcG9ydGVk');
+const E_UDP_DNS_ONLY = atob('VURQIHByb3h5IG9ubHkgZW5hYmxlIGZvciBETlMgd2hpY2ggaXMgcG9ydCA1Mw==');
+const E_INVALID_ADDR_TYPE = atob('aW52YWxpZCBhZGRyZXNzVHlwZQ==');
+const E_EMPTY_ADDR = atob('YWRkcmVzc1ZhbHVlIGlzIGVtcHR5');
+const E_WS_NOT_OPEN = atob('d2ViU29ja2V0LmVhZHlTdGF0ZSBpcyBub3Qgb3Blbg==');
+const E_INVALID_ID_STR = atob('U3RyaW5naWZpZWQgaWRlbnRpZmllciBpcyBpbnZhbGlk');
+
+const ADDRESS_TYPE_IPV4 = 1;
+const ADDRESS_TYPE_URL = 2;
+const ADDRESS_TYPE_IPV6 = 3;
+
+export default {
+	async fetch(request, env, ctx) {
+		try {
+      //网址后缀
+			const subPath = 'good';
+			const url = new URL(request.url);
+
+			if (request.headers.get('Upgrade') === 'websocket') {
+				return await handleWsRequest(request);
+			} else if (request.method === 'GET') {
+				if (url.pathname === '/') {
+					return new Response("Good job", { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+				}
+				if (url.pathname === `/${subPath}`) {
+					return await handleSubscriptionRequest(request, env, authToken);
+				}
+			}
+			return new Response('Not Found', { status: 404 });
+		} catch (err) {
+			return new Response(err.toString(), { status: 500 });
+		}
+	},
+};
+
+async function handleSubscriptionRequest(request, env, uuid) {
+    const url = new URL(request.url);
+    const proxyip = url.searchParams.get('proxyip');
+    const finalLinks = [];
+    const workerDomain = url.hostname;
+
+    const externalEditUrl = (env && env.EXTERNAL_EDIT_URL) || 'http://good.misu7.filegear-sg.me/wddout/edit';
+    try {
+        const response = await fetch(externalEditUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (compatible; Cloudflare Worker)'
+            }
+        });
+
+        if (response.ok) {
+            const htmlContent = await response.text();
+
+            // 从HTML中提取textarea的内容
+            const textareaMatch = htmlContent.match(/<textarea[^>]*>([\s\S]*?)<\/textarea>/);
+            if (textareaMatch && textareaMatch[1]) {
+                const textareaContent = textareaMatch[1].trim();
+
+                const lines = textareaContent.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line && !line.startsWith('--'));
+
+                const nodeList = [];
+
+                for (const line of lines) {
+                    try {
+                        if (line.includes('#')) {
+                            const [ipPort, remark] = line.split('#');
+                            if (ipPort.includes(':')) {
+                                const [ip, port] = ipPort.split(':');
+                                nodeList.push({
+                                    ip: ip.trim(),
+                                    port: parseInt(port),
+                                    isp: remark.trim()
+                                });
+                            } else {
+                                nodeList.push({
+                                    ip: ipPort.trim(),
+                                    port: 443,
+                                    isp: remark.trim()
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+
+                const validNodes = nodeList.filter(node =>
+                    node && node.ip && node.ip !== '127.0.0.1' && !isNaN(node.port) &&
+                    (node.isp.startsWith('HK') || node.isp.startsWith('US') || node.isp.startsWith('WDD') || node.isp.startsWith('SG')) &&
+                    !node.isp.includes('NAT')
+                );
+
+                if (validNodes.length > 0) {
+                    finalLinks.push(...generateLinksFromKVNodes(validNodes, uuid, workerDomain, proxyip));
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error reading from external service:', error);
+    }
+
+    const subscriptionContent = btoa(finalLinks.join('\n'));
+
+    return new Response(subscriptionContent, {
+        headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        },
+    });
+}
+
+
+
+function generateLinksFromKVNodes(list, uuid, workerDomain, proxyip) {
+    const links = [];
+    let wsPath = '/wdd';
+    if (proxyip) {
+        wsPath += '?proxyip=' + encodeURIComponent(proxyip);
+    }
+    wsPath = encodeURIComponent(wsPath);
+    const proto = String.fromCharCode(118,108,101,115,115);
+
+    list.forEach(item => {
+        const safeIP = item.ip.includes(':') ? `[${item.ip}]` : item.ip;
+        const wsParams = new URLSearchParams({
+            encryption: 'none',
+            security: 'tls',
+            sni: workerDomain,
+            fp: 'randomized',
+            type: 'ws',
+            host: workerDomain,
+            path: wsPath
+        });
+        links.push(`${proto}://${uuid}@${safeIP}:443?${wsParams.toString()}#${encodeURIComponent(item.isp + "-SNIP")}`);
+    });
+    return links;
+}
+
+
+
+
+async function handleWsRequest(request) {
+    const wsPair = new WebSocketPair();
+    const [clientSock, serverSock] = Object.values(wsPair);
+    serverSock.accept();
+
+    let remoteConnWrapper = { socket: null };
+    let isDnsQuery = false;
+
+    const url = new URL(request.url);
+    const proxyip = url.searchParams.get('proxyip');
+
+    const earlyData = request.headers.get('sec-websocket-protocol') || '';
+    const readable = makeReadableStream(serverSock, earlyData);
+
+    readable.pipeTo(new WritableStream({
+        async write(chunk) {
+            if (isDnsQuery) return await forwardUDP(chunk, serverSock, null);
+            if (remoteConnWrapper.socket) {
+                const writer = remoteConnWrapper.socket.writable.getWriter();
+                await writer.write(chunk);
+                writer.releaseLock();
+                return;
+            }
+            const { hasError, message, addressType, port, hostname, rawIndex, version, isUDP } = parseWsPacketHeader(chunk, authToken);
+            if (hasError) throw new Error(message);
+
+            if (isUDP) {
+                if (port === 53) isDnsQuery = true;
+                else throw new Error(E_UDP_DNS_ONLY);
+            }
+            const respHeader = new Uint8Array([version[0], 0]);
+            const rawData = chunk.slice(rawIndex);
+
+            if (isDnsQuery) return forwardUDP(rawData, serverSock, respHeader);
+
+            await forwardTCP(addressType, hostname, port, rawData, serverSock, respHeader, remoteConnWrapper, proxyip);
+        },
+    })).catch((err) => { console.log('WS Stream Error:', err); });
+
+    return new Response(null, { status: 101, webSocket: clientSock });
+}
+
+async function forwardTCP(addrType, host, portNum, rawData, ws, respHeader, remoteConnWrapper, proxyip) {
+    async function connectAndSend(address, port) {
+        const remoteSock = connect({ hostname: address, port: port });
+        const writer = remoteSock.writable.getWriter();
+        await writer.write(rawData);
+        writer.releaseLock();
+        return remoteSock;
+    }
+    async function retryConnection() {
+        let fallbackIP = fallbackAddress;
+        if (proxyip) {
+            // 简单的IP格式验证
+            const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            if (ipRegex.test(proxyip)) {
+                fallbackIP = proxyip;
+            } else {
+                console.log('Invalid proxyip format, using default fallback');
+            }
+        }
+        const newSocket = await connectAndSend(fallbackIP, parseInt(fallbackPort, 10) || portNum);
+        remoteConnWrapper.socket = newSocket;
+        newSocket.closed.catch(() => {}).finally(() => closeSocketQuietly(ws));
+        connectStreams(newSocket, ws, respHeader, null);
+    }
+    try {
+        const initialSocket = await connectAndSend(host, portNum);
+        remoteConnWrapper.socket = initialSocket;
+        connectStreams(initialSocket, ws, respHeader, retryConnection);
+    } catch (err) {
+        console.log('Initial connection failed, trying fallback:', err);
+        retryConnection();
+    }
+}
+
+function parseWsPacketHeader(chunk, token) {
+	if (chunk.byteLength < 24) return { hasError: true, message: E_INVALID_DATA };
+	const version = new Uint8Array(chunk.slice(0, 1));
+	if (formatIdentifier(new Uint8Array(chunk.slice(1, 17))) !== token) return { hasError: true, message: E_INVALID_USER };
+	const optLen = new Uint8Array(chunk.slice(17, 18))[0];
+	const cmd = new Uint8Array(chunk.slice(18 + optLen, 19 + optLen))[0];
+	let isUDP = false;
+	if (cmd === 1) {} else if (cmd === 2) { isUDP = true; } else { return { hasError: true, message: E_UNSUPPORTED_CMD }; }
+	const portIdx = 19 + optLen;
+	const port = new DataView(chunk.slice(portIdx, portIdx + 2)).getUint16(0);
+	let addrIdx = portIdx + 2, addrLen = 0, addrValIdx = addrIdx + 1, hostname = '';
+	const addressType = new Uint8Array(chunk.slice(addrIdx, addrValIdx))[0];
+	switch (addressType) {
+		case ADDRESS_TYPE_IPV4: addrLen = 4; hostname = new Uint8Array(chunk.slice(addrValIdx, addrValIdx + addrLen)).join('.'); break;
+		case ADDRESS_TYPE_URL: addrLen = new Uint8Array(chunk.slice(addrValIdx, addrValIdx + 1))[0]; addrValIdx += 1; hostname = new TextDecoder().decode(chunk.slice(addrValIdx, addrValIdx + addrLen)); break;
+		case ADDRESS_TYPE_IPV6: addrLen = 16; const ipv6 = []; const ipv6View = new DataView(chunk.slice(addrValIdx, addrValIdx + addrLen)); for (let i = 0; i < 8; i++) ipv6.push(ipv6View.getUint16(i * 2).toString(16)); hostname = ipv6.join(':'); break;
+		default: return { hasError: true, message: `${E_INVALID_ADDR_TYPE}: ${addressType}` };
+	}
+	if (!hostname) return { hasError: true, message: `${E_EMPTY_ADDR}: ${addressType}` };
+	return { hasError: false, addressType, port, hostname, isUDP, rawIndex: addrValIdx + addrLen, version };
+}
+
+function makeReadableStream(socket, earlyDataHeader) {
+	let cancelled = false;
+	return new ReadableStream({
+		start(controller) {
+			socket.addEventListener('message', (event) => { if (!cancelled) controller.enqueue(event.data); });
+			socket.addEventListener('close', () => { if (!cancelled) { closeSocketQuietly(socket); controller.close(); } });
+			socket.addEventListener('error', (err) => controller.error(err));
+			const { earlyData, error } = base64ToArray(earlyDataHeader);
+			if (error) controller.error(error); else if (earlyData) controller.enqueue(earlyData);
+		},
+		cancel() { cancelled = true; closeSocketQuietly(socket); }
+	});
+}
+
+async function connectStreams(remoteSocket, webSocket, headerData, retryFunc) {
+	let header = headerData, hasData = false;
+	await remoteSocket.readable.pipeTo(
+		new WritableStream({
+			async write(chunk, controller) {
+				hasData = true;
+				if (webSocket.readyState !== 1) controller.error(E_WS_NOT_OPEN);
+				if (header) { webSocket.send(await new Blob([header, chunk]).arrayBuffer()); header = null; } 
+                else { webSocket.send(chunk); }
+			},
+			abort(reason) { console.error("Readable aborted:", reason); },
+		})
+	).catch((error) => { console.error("Stream connection error:", error); closeSocketQuietly(webSocket); });
+	if (!hasData && retryFunc) retryFunc();
+}
+
+async function forwardUDP(udpChunk, webSocket, respHeader) {
+	try {
+		const tcpSocket = connect({ hostname: '8.8.4.4', port: 53 });
+		let udpHeader = respHeader;
+		const writer = tcpSocket.writable.getWriter();
+		await writer.write(udpChunk);
+		writer.releaseLock();
+		await tcpSocket.readable.pipeTo(new WritableStream({
+			async write(chunk) {
+				if (webSocket.readyState === 1) {
+					if (udpHeader) { webSocket.send(await new Blob([udpHeader, chunk]).arrayBuffer()); udpHeader = null; }
+                    else { webSocket.send(chunk); }
+				}
+			},
+		}));
+	} catch (error) {
+		console.error(`DNS forward error: ${error.message}`);
+		// 如果DNS转发失败，关闭WebSocket避免客户端问题
+		closeSocketQuietly(webSocket);
+	}
+}
+
+
+
+function base64ToArray(b64Str) {
+    if (!b64Str) return { error: null };
+    try { b64Str = b64Str.replace(/-/g, '+').replace(/_/g, '/'); return { earlyData: Uint8Array.from(atob(b64Str), (c) => c.charCodeAt(0)).buffer, error: null }; } 
+    catch (error) { return { error }; }
+}
+
+function isValidFormat(uuid) { return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid); }
+
+function closeSocketQuietly(socket) { try { if (socket.readyState === 1 || socket.readyState === 2) socket.close(); } catch (error) {} }
+
+const hexTable = Array.from({ length: 256 }, (v, i) => (i + 256).toString(16).slice(1));
+
+function formatIdentifier(arr, offset = 0) {
+    const id = (hexTable[arr[offset]]+hexTable[arr[offset+1]]+hexTable[arr[offset+2]]+hexTable[arr[offset+3]]+"-"+hexTable[arr[offset+4]]+hexTable[arr[offset+5]]+"-"+hexTable[arr[offset+6]]+hexTable[arr[offset+7]]+"-"+hexTable[arr[offset+8]]+hexTable[arr[offset+9]]+"-"+hexTable[arr[offset+10]]+hexTable[arr[offset+11]]+hexTable[arr[offset+12]]+hexTable[arr[offset+13]]+hexTable[arr[offset+14]]+hexTable[arr[offset+15]]).toLowerCase();
+    if (!isValidFormat(id)) throw new TypeError(E_INVALID_ID_STR);
+    return id;
+}
